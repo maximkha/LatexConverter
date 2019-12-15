@@ -12,6 +12,7 @@ using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System.Text;
 using System.Threading;
+using System.IO;
 
 namespace LatexConverter
 {
@@ -23,27 +24,41 @@ namespace LatexConverter
             int browserRender = 1500; //in MS
 
             string file = "";
+            string append = "";
             if (args.Length == 0)
             {
                 Console.WriteLine("Enter full path of Markdown file:");
                 file = getValidFile();
+                Console.WriteLine("Image Folder (leave empty for none)?");
+                Console.Write(">");
+                append = Console.ReadLine();
             }
             else
             {
                 file = args[0];
-                if (!System.IO.File.Exists(file))
+                if (!File.Exists(file))
                 {
                     Console.WriteLine("That file does not exist!");
                     return;
                 }
+
+                if (args.Length == 2) append = args[1];
             }
 
             //string file = @"C:\Users\maxim\Desktop\js\sqs\readme\ReadmeMD.NJ\readme.md";
-            string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
-            string resFile = System.IO.Path.GetDirectoryName(file)+"\\"+System.IO.Path.GetFileNameWithoutExtension(file)+".noJax.md"; //@"C:\Users\maxim\Desktop\js\sqs\readme\ReadmeMD.NJ\readme.noJax.md";
-            string imgDir = System.IO.Path.GetDirectoryName(file) + "\\"; //@"C:\Users\maxim\Desktop\js\sqs\readme\ReadmeMD.NJ\";
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            string resFile = Path.GetDirectoryName(file)+"\\"+System.IO.Path.GetFileNameWithoutExtension(file)+".noJax.md"; //@"C:\Users\maxim\Desktop\js\sqs\readme\ReadmeMD.NJ\readme.noJax.md";
+            string imgDir = Path.GetDirectoryName(file) + "\\"; //@"C:\Users\maxim\Desktop\js\sqs\readme\ReadmeMD.NJ\";
 
-            string fileContents = System.IO.File.ReadAllText(file);
+            if (!IsValidPath(imgDir + append))
+            {
+                Console.WriteLine("Invalid Img Path");
+                return;
+            }
+
+            if (append != "") Directory.CreateDirectory(imgDir + append);
+
+            string fileContents = File.ReadAllText(file);
 
             Regex MultiLine = new Regex(@"(?<!\\)\$\$(?s)(.*?)(?<!\\)\$\$"); //MultiLine Regex
             Regex SingleLine = new Regex(@"(?<!\\)\$(?s)(.*?)(?<!\\)\$"); //Inline Regex, remove 0 length matches.
@@ -135,13 +150,13 @@ namespace LatexConverter
                 Thread.Sleep(browserRender);
                 string imgData = ((string)js.ExecuteScript("return window['result'].img;")).Substring(22);
                 Console.WriteLine("Recieved {0} chars of data", imgData.Length);
-                System.IO.File.WriteAllBytes(imgDir + fileName + ".LaTexExport" + i + ".png", Convert.FromBase64String(imgData));
+                File.WriteAllBytes(imgDir + append + fileName + ".LaTexExport" + i + ".png", Convert.FromBase64String(imgData));
                 //rendered.Add("![LaTex" + i + "](LaTexExport" + i + ".png)");
                 //if (mathPointers[i].Item2 == 0) rendered.Add("<div align=\"left\" style=\"text-align:left\"><img src=\"" + "LaTexExport" + i + ".png" + "\"></div>");
                 
                 //if (mathPointers[i].Item2 == 0) RenderStrings[Latex] = ("![LaTexExport" + i + ".png](" + "LaTexExport" + i + ".png" + ")");
                 //if (mathPointers[i].Item2 == 1) RenderStrings[Latex] = ("<div align=\"center\" style=\"text-align:center\"><img src=\"" + "LaTexExport" + i + ".png" + "\"></div>");
-                RenderStrings[Latex] = fileName + ".LaTexExport" + i + ".png";
+                RenderStrings[Latex] = (append + fileName + ".LaTexExport" + i + ".png").Substring(1);
             }
 
             driver.Close();
@@ -170,7 +185,7 @@ namespace LatexConverter
 
             string fileWithMath = string.Join("", Compiled);
             byte[] buff = UTF8Encoding.UTF8.GetBytes(fileWithMath);
-            System.IO.File.Create(resFile).Write(buff, 0, buff.Length);
+            File.Create(resFile).Write(buff, 0, buff.Length);
         }
 
         public static string GenerateJS(string latexExpr)
@@ -184,9 +199,36 @@ namespace LatexConverter
         {
             Console.Write(">");
             string file = Console.ReadLine();
-            if (System.IO.File.Exists(file)) return file;
+            if (File.Exists(file)) return file;
             Console.WriteLine("That file does not exist!");
             return getValidFile();
+        }
+
+        // https://stackoverflow.com/questions/3137097/check-if-a-string-is-a-valid-windows-directory-folder-path
+        public static bool IsValidPath(string path, bool exactPath = true)
+        {
+            bool isValid = true;
+
+            try
+            {
+                string fullPath = Path.GetFullPath(path);
+
+                if (exactPath)
+                {
+                    string root = Path.GetPathRoot(path);
+                    isValid = string.IsNullOrEmpty(root.Trim(new char[] { '\\', '/' })) == false;
+                }
+                else
+                {
+                    isValid = Path.IsPathRooted(path);
+                }
+            }
+            catch (Exception ex)
+            {
+                isValid = false;
+            }
+
+            return isValid;
         }
     }
 }
