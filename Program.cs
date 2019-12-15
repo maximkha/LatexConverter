@@ -39,6 +39,7 @@ namespace LatexConverter
             }
 
             //string file = @"C:\Users\maxim\Desktop\js\sqs\readme\ReadmeMD.NJ\readme.md";
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
             string resFile = System.IO.Path.GetDirectoryName(file)+"\\"+System.IO.Path.GetFileNameWithoutExtension(file)+".noJax.md"; //@"C:\Users\maxim\Desktop\js\sqs\readme\ReadmeMD.NJ\readme.noJax.md";
             string imgDir = System.IO.Path.GetDirectoryName(file) + "\\"; //@"C:\Users\maxim\Desktop\js\sqs\readme\ReadmeMD.NJ\";
 
@@ -134,13 +135,13 @@ namespace LatexConverter
                 Thread.Sleep(browserRender);
                 string imgData = ((string)js.ExecuteScript("return window['result'].img;")).Substring(22);
                 Console.WriteLine("Recieved {0} chars of data", imgData.Length);
-                System.IO.File.WriteAllBytes(imgDir + "LaTexExport" + i + ".png", Convert.FromBase64String(imgData));
+                System.IO.File.WriteAllBytes(imgDir + fileName + ".LaTexExport" + i + ".png", Convert.FromBase64String(imgData));
                 //rendered.Add("![LaTex" + i + "](LaTexExport" + i + ".png)");
                 //if (mathPointers[i].Item2 == 0) rendered.Add("<div align=\"left\" style=\"text-align:left\"><img src=\"" + "LaTexExport" + i + ".png" + "\"></div>");
                 
                 //if (mathPointers[i].Item2 == 0) RenderStrings[Latex] = ("![LaTexExport" + i + ".png](" + "LaTexExport" + i + ".png" + ")");
                 //if (mathPointers[i].Item2 == 1) RenderStrings[Latex] = ("<div align=\"center\" style=\"text-align:center\"><img src=\"" + "LaTexExport" + i + ".png" + "\"></div>");
-                RenderStrings[Latex] = "LaTexExport" + i + ".png";
+                RenderStrings[Latex] = fileName + ".LaTexExport" + i + ".png";
             }
 
             driver.Close();
@@ -152,7 +153,7 @@ namespace LatexConverter
             for (int i = 0; i < mathPointers.Count; i++)
             {
                 //rendered.Add(RenderStrings[mathPointers[i].Item3]);
-                if (mathPointers[i].Item2 == 0) rendered.Add("![LaTexExport" + i + ".png](" + RenderStrings[mathPointers[i].Item3] + ")");
+                if (mathPointers[i].Item2 == 0) rendered.Add("![" + fileName + ".LaTexExport" + i + ".png](" + RenderStrings[mathPointers[i].Item3] + ")");
                 if (mathPointers[i].Item2 == 1) rendered.Add("<div align=\"center\" style=\"text-align:center\"><img src=\"" + RenderStrings[mathPointers[i].Item3] + "\"></div>");
             }
 
