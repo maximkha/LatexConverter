@@ -168,8 +168,8 @@ namespace LatexConverter
             for (int i = 0; i < mathPointers.Count; i++)
             {
                 //rendered.Add(RenderStrings[mathPointers[i].Item3]);
-                if (mathPointers[i].Item2 == 0) rendered.Add("![" + fileName + ".LaTexExport" + i + ".png](" + RenderStrings[mathPointers[i].Item3] + ")");
-                if (mathPointers[i].Item2 == 1) rendered.Add("<div align=\"center\" style=\"text-align:center\"><img src=\"" + RenderStrings[mathPointers[i].Item3] + "\"></div>");
+                if (mathPointers[i].Item2 == 0) rendered.Add("<img valign=\"middle\" src=\"" + RenderStrings[mathPointers[i].Item3] + "\">");//rendered.Add("![" + fileName + ".LaTexExport" + i + ".png](" + RenderStrings[mathPointers[i].Item3] + ")");
+                if (mathPointers[i].Item2 == 1) rendered.Add("<div align=\"center\" valign=\"middle\" style=\"text-align:center\"><img src=\"" + RenderStrings[mathPointers[i].Item3] + "\"></div>");
             }
 
             List<string> Compiled = new List<string>();
@@ -178,7 +178,7 @@ namespace LatexConverter
             for (int i = 0; i < mathPointers.Count; i++)
             {
                 Compiled.Add(peicesWithoutMath[i]);
-                Compiled.Add(rendered[i]);
+                Compiled.Add(rendered[i].Replace("\\","/"));
             }
 
             Compiled.Add(peicesWithoutMath[mathPointers.Count]);
